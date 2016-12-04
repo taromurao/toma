@@ -1,14 +1,19 @@
 package layout
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import tm.toma.Commands
 
 import tm.toma.R
+import tm.toma.States
+import tm.toma.TimerService
 
 /**
  * A simple [Fragment] subclass.
@@ -19,6 +24,16 @@ import tm.toma.R
  * create an instance of this fragment.
  */
 class WorkOrBreakFragment : Fragment() {
+
+    private val mStartWorkIntent: Intent by lazy {
+        val intent = Intent(this.context, TimerService::class.java)
+        intent.putExtra("command", Commands.ALTER_STATE)
+        intent.putExtra("newState", States.WORK)
+    }
+
+    private val mWorkButton: ImageButton by lazy {
+        activity.findViewById(R.id.workButton) as ImageButton
+    }
 
     // TODO: Rename and change types of parameters
     private var mParam1: String? = null
@@ -49,11 +64,7 @@ class WorkOrBreakFragment : Fragment() {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            mListener = context as OnFragmentInteractionListener?
-        } else {
-            throw RuntimeException(context!!.toString() + " must implement OnFragmentInteractionListener")
-        }
+        mWorkButton.setOnClickListener { context?.startService(mStartWorkIntent) }
     }
 
     override fun onDetach() {

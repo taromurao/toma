@@ -20,7 +20,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@android:drawable/ic_media_play"
-                android:id="@+id/imageButton2"
+                android:id="@+id/workButton"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentStart="true" />
 
@@ -28,9 +28,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@android:drawable/ic_media_pause"
-                android:id="@+id/imageButton"
+                android:id="@+id/breakButton"
                 android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/imageButton2"
+                android:layout_toEndOf="@+id/workButton"
                 android:layout_marginStart="17dp" />
         </RelativeLayout>
     </RelativeLayout>

@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     private val mRequestCurrentStateIntent: Intent by lazy {
         val intent = Intent(this, TimerService::class.java)
-        intent.putExtra("what", Commands.PUBLISH_STATE)
+        intent.putExtra("command", Commands.PUBLISH_STATE)
     }
 
     override fun onFragmentInteraction(uri: Uri) {}
