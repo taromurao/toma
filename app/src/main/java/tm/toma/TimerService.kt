@@ -1,6 +1,7 @@
 package tm.toma
 
 import android.app.Service
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.IBinder
 import android.support.v4.content.LocalBroadcastManager
@@ -8,13 +9,9 @@ import android.util.Log
 import java.util.*
 import kotlin.properties.Delegates
 
-enum class Commands {
-    PUBLISH_STATE, ALTER_STATE
-}
+enum class Commands { PUBLISH_STATE, ALTER_STATE }
 
-enum class ActivityDurations(val minutes: Minute) {
-    WORK_DURATION(45), BREAK_DURATION(5)
-}
+enum class ActivityDurations(val minutes: Float) { WORK_DURATION(0.01F), BREAK_DURATION(0.01F) }
 
 class TimerService : Service() {
 
@@ -34,10 +31,10 @@ class TimerService : Service() {
     }
 
     private fun start(newState: States) {
-        mTimer.cancel()
-        mTimer.schedule(NotifyActivityCompleteTask(), when (newState) {
-            States.WORK     -> milliSecs(ActivityDurations.WORK_DURATION.minutes)
-            States.BREAK    -> milliSecs(ActivityDurations.BREAK_DURATION.minutes)
+        publishState()
+        mTimer.schedule(NotifyActivityCompleteTask(this), when (newState) {
+            States.WORK     -> milliSecs(ActivityDurations.WORK_DURATION)
+            States.BREAK    -> milliSecs(ActivityDurations.BREAK_DURATION)
             else            -> 0
         })
     }
@@ -63,8 +60,23 @@ class TimerService : Service() {
         mCurrentStateIntent.putExtra("state", mState)
         mLocalBroadcastManager.sendBroadcast(mCurrentStateIntent)
     }
+
+    private fun milliSecs(duration: ActivityDurations): Long = (duration.minutes * 60 * 1000).toLong()
+
+    class NotifyActivityCompleteTask(val mTimerService: TimerService) : TimerTask() {
+
+        private val TAG: String = javaClass.name
+
+        private val ringIntent by lazy {
+            val intent = Intent(mTimerService, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.putExtra("activityCompleted", true)
+        }
+
+        override fun run() {
+            mTimerService.startActivity(ringIntent)
+        }
+    }
 }
 
-typealias Minute = Int
 
-private fun milliSecs(minutes: Minute): Long = (minutes * 60 * 1000).toLong()

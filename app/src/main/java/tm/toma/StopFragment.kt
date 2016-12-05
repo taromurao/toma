@@ -1,4 +1,4 @@
-package layout
+package tm.toma
 
 import android.content.Context
 import android.content.Intent
@@ -8,32 +8,22 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import tm.toma.Commands
 
-import tm.toma.R
-import tm.toma.States
-import tm.toma.TimerService
 
 /**
  * A simple [Fragment] subclass.
  * Activities that contain this fragment must implement the
- * [WorkOrBreakFragment.OnFragmentInteractionListener] interface
+ * [StopFragment.OnFragmentInteractionListener] interface
  * to handle interaction events.
- * Use the [WorkOrBreakFragment.newInstance] factory method to
+ * Use the [StopFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class WorkOrBreakFragment : Fragment() {
+class StopFragment : Fragment() {
 
-    private val mStartWorkIntent: Intent by lazy {
-        val intent = Intent(this.context, TimerService::class.java)
+    private val mChooseWorkOrBreakIntent: Intent by lazy {
+        val intent: Intent = Intent(this.context, TimerService::class.java)
         intent.putExtra("command", Commands.ALTER_STATE)
-        intent.putExtra("newState", States.WORK)
-    }
-
-    private val mStartBreakIntent: Intent by lazy {
-        val intent = Intent(this.context, TimerService::class.java)
-        intent.putExtra("command", Commands.ALTER_STATE)
-        intent.putExtra("newState", States.BREAK)
+        intent.putExtra("newState", States.IDLE)
     }
 
     // TODO: Rename and change types of parameters
@@ -52,9 +42,8 @@ class WorkOrBreakFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view: View = inflater!!.inflate(R.layout.fragment_work_or_break, container, false)
-        view.findViewById(R.id.workButton).setOnClickListener { context?.startService(mStartWorkIntent) }
-        view.findViewById(R.id.breakButton).setOnClickListener { context?.startService(mStartBreakIntent) }
+        val view = inflater!!.inflate(R.layout.fragment_stop, container, false)
+        view.findViewById(R.id.stopButton).setOnClickListener { context.startService(mChooseWorkOrBreakIntent) }
         return view
     }
 
@@ -67,6 +56,11 @@ class WorkOrBreakFragment : Fragment() {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
+        if (context is OnFragmentInteractionListener) {
+            mListener = context as OnFragmentInteractionListener?
+        } else {
+            throw RuntimeException(context!!.toString() + " must implement OnFragmentInteractionListener")
+        }
     }
 
     override fun onDetach() {
@@ -102,11 +96,11 @@ class WorkOrBreakFragment : Fragment() {
          * *
          * @param param2 Parameter 2.
          * *
-         * @return A new instance of fragment WorkOrBreakFragment.
+         * @return A new instance of fragment StopFragment.
          */
         // TODO: Rename and change types and number of parameters
-        fun newInstance(param1: String, param2: String): WorkOrBreakFragment {
-            val fragment = WorkOrBreakFragment()
+        fun newInstance(param1: String, param2: String): StopFragment {
+            val fragment = StopFragment()
             val args = Bundle()
             args.putString(ARG_PARAM1, param1)
             args.putString(ARG_PARAM2, param2)

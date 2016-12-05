@@ -11,9 +11,13 @@ import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentTransaction
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import layout.WorkOrBreakFragment
 
-class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteractionListener,
+        StopFragment.OnFragmentInteractionListener {
+
+    private val TAG: String = javaClass.name
 
     private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this)
@@ -26,6 +30,8 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
     }
 
     val mWorkOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
+
+    val mStopFragment: StopFragment = StopFragment()
 
     private val mRequestCurrentStateIntent: Intent by lazy {
         val intent = Intent(this, TimerService::class.java)
@@ -41,6 +47,7 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     override fun onResume() {
         super.onResume()
+        if (intent.getBooleanExtra("ativityComplete", false)) Log.i(TAG, "Ring ring!")
         mLocalBroadcastManager.registerReceiver(mStateBroadcastReceiver, mCurrentStateIntentFilter)
         requestCurrentState()
     }
@@ -62,7 +69,7 @@ class StateBroadcastReceiver(val mActivity: MainActivity): BroadcastReceiver() {
         if (intent != null) {
             setFragment(when (intent.getSerializableExtra("state")) {
                 States.IDLE -> mActivity.mWorkOrBreakFragment
-                else        -> mActivity.mWorkOrBreakFragment
+                else        -> mActivity.mStopFragment
             })
         }
     }
