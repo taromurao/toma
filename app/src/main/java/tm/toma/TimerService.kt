@@ -24,8 +24,9 @@ class TimerService : Service(), Loggable {
         if (new in setOf(States.WORK, States.BREAK))
             mTimer.schedule(NotifyActivityCompleteTask(this), duration(new))
         else
-            if (old in setOf(States.WORK, States.BREAK) && mMediaPlayer.isPlaying) {
-                mMediaPlayer.pause()
+            mTimer.cancel()
+            if (old in setOf(States.WORK, States.BREAK)) {
+                if (mMediaPlayer.isPlaying) mMediaPlayer.pause()
             }
     }
 
@@ -74,7 +75,7 @@ class TimerService : Service(), Loggable {
 
 private fun duration(state: States): Long {
     return (when (state) {
-        States.BREAK -> 5F
+        States.BREAK -> 0.3F
         States.WORK -> 45F
         else -> 0F
     } * 60 * 1000).toLong()
