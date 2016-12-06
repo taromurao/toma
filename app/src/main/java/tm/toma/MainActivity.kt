@@ -11,13 +11,11 @@ import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentTransaction
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
+import android.view.WindowManager
 import layout.WorkOrBreakFragment
 
 class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteractionListener,
-        StopFragment.OnFragmentInteractionListener {
-
-    private val TAG: String = javaClass.name
+        StopFragment.OnFragmentInteractionListener, Loggable {
 
     private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this)
@@ -42,22 +40,34 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_main)
     }
 
     override fun onResume() {
         super.onResume()
-        if (intent.getBooleanExtra("ativityComplete", false)) Log.i(TAG, "Ring ring!")
         mLocalBroadcastManager.registerReceiver(mStateBroadcastReceiver, mCurrentStateIntentFilter)
+        toggleMainActivityActive(true)
         requestCurrentState()
     }
 
     override fun onPause() {
         super.onPause()
+        toggleMainActivityActive(false)
         mLocalBroadcastManager.unregisterReceiver(mStateBroadcastReceiver)
     }
 
     private fun requestCurrentState() { startService(mRequestCurrentStateIntent) }
+
+    private fun toggleMainActivityActive(active: Boolean) {
+        startService(
+                Intent(this, TimerService::class.java)
+                        .putExtra("command", Commands.TOGGLE_MAIN_ACTIVITY_ACTIVE)
+                        .putExtra("active", active))
+    }
 
 }
 
@@ -75,10 +85,16 @@ class StateBroadcastReceiver(val mActivity: MainActivity): BroadcastReceiver() {
     }
 
     private fun setFragment(fragment: Fragment) {
-        val transaction: FragmentTransaction = mActivity.supportFragmentManager.beginTransaction()
-        mHandler.post {
-            transaction.replace(R.id.activity_main, fragment)
-            transaction.commit()
+        val shouldReplace: Boolean =
+                !(mActivity.supportFragmentManager
+                        .findFragmentByTag(fragment.javaClass.name)?.isVisible ?: false)
+
+        if (shouldReplace) {
+            mHandler.post {
+                val transaction: FragmentTransaction = mActivity.supportFragmentManager.beginTransaction()
+                transaction.replace(R.id.activity_main, fragment, fragment.javaClass.name)
+                transaction.commit()
+            }
         }
     }
 }

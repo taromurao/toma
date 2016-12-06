@@ -1,26 +1,35 @@
 package tm.toma
 
 import android.app.Service
-import android.content.ContentValues.TAG
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.IBinder
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
 import java.util.*
 import kotlin.properties.Delegates
 
-enum class Commands { PUBLISH_STATE, ALTER_STATE }
+enum class Commands { PUBLISH_STATE, ALTER_STATE, TOGGLE_MAIN_ACTIVITY_ACTIVE }
 
-enum class ActivityDurations(val minutes: Float) { WORK_DURATION(0.01F), BREAK_DURATION(0.01F) }
+class TimerService : Service(), Loggable {
 
-class TimerService : Service() {
-
-    private val TAG: String = javaClass.name
+    val mMediaPlayer: MediaPlayer by lazy {
+        val mp = MediaPlayer.create(this, R.raw.bell)
+        mp.setLooping(true)
+        mp
+    }
 
     private var mState: States by Delegates.observable(States.IDLE) { prop, old, new ->
-        Log.i(TAG, "Got new state: $new, old state: $old")
-        start(new)
+        mLogger.debug("Got new state: {}, old state: {}", new, old)
+        broadcastState()
+        if (new in setOf(States.WORK, States.BREAK))
+            mTimer.schedule(NotifyActivityCompleteTask(this), duration(new))
+        else
+            if (old in setOf(States.WORK, States.BREAK) && mMediaPlayer.isPlaying) {
+                mMediaPlayer.pause()
+            }
     }
+
+    private var mMainActivityIsActive: Boolean = false
 
     private val mTimer: Timer = Timer()
 
@@ -28,15 +37,6 @@ class TimerService : Service() {
 
     private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this)
-    }
-
-    private fun start(newState: States) {
-        publishState()
-        mTimer.schedule(NotifyActivityCompleteTask(this), when (newState) {
-            States.WORK     -> milliSecs(ActivityDurations.WORK_DURATION)
-            States.BREAK    -> milliSecs(ActivityDurations.BREAK_DURATION)
-            else            -> 0
-        })
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -51,32 +51,32 @@ class TimerService : Service() {
 
     private fun handleCommand(intent: Intent) {
         when(intent.getSerializableExtra("command")) {
-            Commands.PUBLISH_STATE  -> publishState()
+            Commands.PUBLISH_STATE  -> broadcastState()
             Commands.ALTER_STATE    -> mState = intent.getSerializableExtra("newState") as States
+            Commands.TOGGLE_MAIN_ACTIVITY_ACTIVE -> mMainActivityIsActive = intent.getBooleanExtra("active", false)
         }
     }
 
-    private fun publishState() {
+    private fun broadcastState() {
         mCurrentStateIntent.putExtra("state", mState)
         mLocalBroadcastManager.sendBroadcast(mCurrentStateIntent)
     }
 
-    private fun milliSecs(duration: ActivityDurations): Long = (duration.minutes * 60 * 1000).toLong()
-
-    class NotifyActivityCompleteTask(val mTimerService: TimerService) : TimerTask() {
-
-        private val TAG: String = javaClass.name
-
-        private val ringIntent by lazy {
-            val intent = Intent(mTimerService, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.putExtra("activityCompleted", true)
-        }
-
+    class NotifyActivityCompleteTask(val mTimerService: TimerService) : TimerTask(), Loggable {
         override fun run() {
-            mTimerService.startActivity(ringIntent)
+            if (!mTimerService.mMediaPlayer.isPlaying) mTimerService.mMediaPlayer.start()
+            if (!mTimerService.mMainActivityIsActive)
+                mTimerService.startActivity(Intent(mTimerService, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 }
 
+private fun duration(state: States): Long {
+    return (when (state) {
+        States.BREAK -> 5F
+        States.WORK -> 45F
+        else -> 0F
+    } * 60 * 1000).toLong()
+}
 
