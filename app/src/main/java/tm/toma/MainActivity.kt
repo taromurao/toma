@@ -9,9 +9,10 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentTransaction
 import android.support.v4.content.LocalBroadcastManager
 import android.view.WindowManager
+import android.widget.TextView
+import layout.StopFragment
 import layout.WorkOrBreakFragment
 
 class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteractionListener,
@@ -21,10 +22,16 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
         LocalBroadcastManager.getInstance(this)
     }
 
-    private val mCurrentStateIntentFilter: IntentFilter = IntentFilter("currentState")
+    private val mCurrentStateIntentFilter: IntentFilter = IntentFilter(CURRENT_STATE)
+
+    private val mRemainingTimeIntentFilter: IntentFilter = IntentFilter(REMAINING_TIME)
 
     private val mStateBroadcastReceiver: StateBroadcastReceiver by lazy {
         StateBroadcastReceiver(this)
+    }
+
+    private val mRemainingTimeBroadcastReceiver: RemainingTimeBroadcastReceiver by lazy {
+        RemainingTimeBroadcastReceiver(this)
     }
 
     val mWorkOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
@@ -40,16 +47,22 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+
+        // Wake up user device when inactive
+        window.addFlags(
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         setContentView(R.layout.activity_main)
     }
 
     override fun onResume() {
         super.onResume()
         mLocalBroadcastManager.registerReceiver(mStateBroadcastReceiver, mCurrentStateIntentFilter)
+        mLocalBroadcastManager.registerReceiver(
+                mRemainingTimeBroadcastReceiver, mRemainingTimeIntentFilter)
         toggleMainActivityActive(true)
         requestCurrentState()
     }
@@ -58,6 +71,7 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
         super.onPause()
         toggleMainActivityActive(false)
         mLocalBroadcastManager.unregisterReceiver(mStateBroadcastReceiver)
+        mLocalBroadcastManager.unregisterReceiver(mRemainingTimeBroadcastReceiver)
     }
 
     private fun requestCurrentState() { startService(mRequestCurrentStateIntent) }
@@ -71,12 +85,25 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
 }
 
-class StateBroadcastReceiver(val mActivity: MainActivity): BroadcastReceiver() {
+abstract class PostableBroadcastReceiver(val mActivity: MainActivity?) : BroadcastReceiver() {
+    protected val mHandler: Handler by lazy { Handler(mActivity?.mainLooper) }
+}
 
-    private val mHandler: Handler by lazy { Handler(mActivity.mainLooper) }
-
+class RemainingTimeBroadcastReceiver(mActivity: MainActivity?) :
+        PostableBroadcastReceiver(mActivity), Loggable {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null) {
+        val remainingTime: String? = intent?.getStringExtra("time")
+        if (remainingTime != null)
+            mHandler.post {
+                (mActivity?.findViewById(R.id.remainingTimeTextView) as TextView).text =
+                        remainingTime }
+
+    }
+}
+
+class StateBroadcastReceiver(mActivity: MainActivity): PostableBroadcastReceiver(mActivity) {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent != null && mActivity != null) {
             setFragment(when (intent.getSerializableExtra("state")) {
                 States.IDLE -> mActivity.mWorkOrBreakFragment
                 else        -> mActivity.mStopFragment
@@ -85,16 +112,15 @@ class StateBroadcastReceiver(val mActivity: MainActivity): BroadcastReceiver() {
     }
 
     private fun setFragment(fragment: Fragment) {
-        val shouldReplace: Boolean =
-                !(mActivity.supportFragmentManager
-                        .findFragmentByTag(fragment.javaClass.name)?.isVisible ?: false)
+        if (mActivity !=  null) {
+            val shouldReplace: Boolean =
+                    !(mActivity.supportFragmentManager
+                            .findFragmentByTag(fragment.javaClass.name)?.isVisible ?: false)
 
-        if (shouldReplace) {
-            mHandler.post {
-                val transaction: FragmentTransaction = mActivity.supportFragmentManager.beginTransaction()
-                transaction.replace(R.id.activity_main, fragment, fragment.javaClass.name)
-                transaction.commit()
-            }
+            if (shouldReplace)
+                mHandler.post { mActivity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.activity_main, fragment, fragment.javaClass.name)
+                        .commit() }
         }
     }
 }

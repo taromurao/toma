@@ -1,4 +1,4 @@
-package tm.toma
+package layout
 
 import android.content.Context
 import android.content.Intent
@@ -8,6 +8,10 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import tm.toma.Commands
+import tm.toma.R
+import tm.toma.States
+import tm.toma.TimerService
 
 
 /**
@@ -19,7 +23,6 @@ import android.view.ViewGroup
  * create an instance of this fragment.
  */
 class StopFragment : Fragment() {
-
     private val mChooseWorkOrBreakIntent: Intent by lazy {
         val intent: Intent = Intent(this.context, TimerService::class.java)
         intent.putExtra("command", Commands.ALTER_STATE)
