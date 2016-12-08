@@ -65,35 +65,37 @@ class TimerService : Service(), Loggable {
         LocalBroadcastManager.getInstance(this)
     }
 
-//    private val mMainActivityIntent: Intent by lazy { Intent(this, MainActivity::class.java) }
+    private fun alterStateAction(newState: States): NotificationCompat.Action {
+        val (icon: Int, title: String) = when (newState) {
+            States.IDLE -> Pair(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.stop))
+            States.WORK -> Pair(android.R.drawable.ic_media_play, getString(R.string.work))
+            States.BREAK-> Pair(android.R.drawable.ic_media_pause, getString(R.string.pause))
+        }
 
-//    private val mNotificationPendingIntent: PendingIntent by lazy { PendingIntent.getActivity(this, 0, mMainActivityIntent, 0) }
+        val alterStateIntent: Intent = Intent(this, TimerService::class.java)
+                .putExtra("command", Commands.ALTER_STATE)
+                .putExtra("newState", newState)
 
-    private val mAlterStateToIdleIntent: Intent by lazy {
-        val intent = Intent(this, TimerService::class.java)
-        intent.putExtra("command", Commands.ALTER_STATE)
-        intent.putExtra("newState", States.IDLE)
+        val notificationPendingIntent: PendingIntent =
+                PendingIntent.getService(this, 0, alterStateIntent, 0)
 
+        return NotificationCompat.Action.Builder(icon, title, notificationPendingIntent).build()
     }
 
-    private val mNotificationPendingIntent: PendingIntent by lazy {
-        PendingIntent.getService(this, 0, mAlterStateToIdleIntent, 0)
+    private val mStartMainActivityPendingIntent: PendingIntent by lazy {
+        PendingIntent.getService(this, 0, Intent(this, MainActivity::class.java), 0)
     }
 
-    private val mAlterStateToIdleAction: NotificationCompat.Action by lazy {
-        NotificationCompat.Action.Builder(
-                android.R.drawable.ic_menu_close_clear_cancel,
-                "Stop",
-                mNotificationPendingIntent)
-                .build()
-    }
+    private val mWorkOrBreakNotificationBuilder: NotificationCompat.Builder
 
-    private val mNotificationBuilder: NotificationCompat.Builder by lazy {
-        NotificationCompat.Builder(this)
+    private val mIdleNotificationBuilder: NotificationCompat.Builder
+
+    private fun notificationBuilder(newState: States): NotificationCompat.Builder {
+        return NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Toma")
-                .addAction(mAlterStateToIdleAction)
-                .setContentIntent(mNotificationPendingIntent)
+                .addAction(alterStateAction(newState))
+                .setContentIntent(mStartMainActivityPendingIntent)
     }
 
     private fun startTask(task: States) {
