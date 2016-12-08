@@ -93,9 +93,9 @@ class RemainingTimeBroadcastReceiver(mActivity: MainActivity?) :
         PostableBroadcastReceiver(mActivity), Loggable {
     override fun onReceive(context: Context?, intent: Intent?) {
         val remainingTime: String? = intent?.getStringExtra("time")
-        if (remainingTime != null)
+        if (remainingTime != null && mActivity != null)
             mHandler.post {
-                (mActivity?.findViewById(R.id.remainingTimeTextView) as TextView).text =
+                (mActivity.findViewById(R.id.remainingTimeTextView) as TextView).text =
                         remainingTime }
 
     }
