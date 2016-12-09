@@ -10,6 +10,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.content.LocalBroadcastManager
+import android.support.v7.widget.Toolbar
+import android.view.Menu
 import android.view.WindowManager
 import android.widget.TextView
 import layout.StopFragment
@@ -56,6 +58,13 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setContentView(R.layout.activity_main)
+        val myToolbar: Toolbar = findViewById(R.id.my_toolbar) as Toolbar
+        setSupportActionBar(myToolbar)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onResume() {
@@ -97,7 +106,6 @@ class RemainingTimeBroadcastReceiver(mActivity: MainActivity?) :
             mHandler.post {
                 (mActivity.findViewById(R.id.remainingTimeTextView) as TextView).text =
                         remainingTime }
-
     }
 }
 

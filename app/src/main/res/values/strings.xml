@@ -3,4 +3,5 @@
     <string name="stop">Stop</string>
     <string name="work">Work</string>
     <string name="pause">Break</string>
+    <string name="action_settings">Settings</string>
 </resources>
