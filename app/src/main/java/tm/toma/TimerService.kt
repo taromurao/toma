@@ -26,25 +26,19 @@ class TimerService : Service(), Loggable {
         mp
     }
 
-    private var mState: States by Delegates.observable(States.IDLE) { prop, old, new ->
+    private var mState: States by Delegates.observable(States.IDLE) { _, old, new ->
         mLogger.debug("Got new state: {}, old state: {}", new, old)
         broadcastState()
         if (new in setOf(States.WORK, States.BREAK)) {
             mNotificationId = randomInt()
-            startForeground(mNotificationId, mNotificationBuilder.build())
+            startForeground(mNotificationId, mWorkOrBreakNotificationBuilder.build())
             startTask(new)
-            mTimer?.start()
         } else {
             mTimer?.cancel()
-            if (old in setOf(States.WORK, States.BREAK) && mMediaPlayer.isPlaying)
-                mMediaPlayer.pause()
+            mNotificationManager.notify(mNotificationId, mIdleNotificationBuilder.build())
+            if (mMediaPlayer.isPlaying) mMediaPlayer.pause()
             stopForeground(false)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mNotificationManager.cancel(mNotificationId)
     }
 
     private var mMainActivityIsActive: Boolean = false
@@ -77,7 +71,7 @@ class TimerService : Service(), Loggable {
                 .putExtra("newState", newState)
 
         val notificationPendingIntent: PendingIntent =
-                PendingIntent.getService(this, 0, alterStateIntent, 0)
+                PendingIntent.getService(this, randomInt(), alterStateIntent, START_FLAG_REDELIVERY)
 
         return NotificationCompat.Action.Builder(icon, title, notificationPendingIntent).build()
     }
@@ -86,16 +80,20 @@ class TimerService : Service(), Loggable {
         PendingIntent.getService(this, 0, Intent(this, MainActivity::class.java), 0)
     }
 
-    private val mWorkOrBreakNotificationBuilder: NotificationCompat.Builder
+    private val mWorkOrBreakNotificationBuilder: NotificationCompat.Builder by lazy { builder(null) }
 
-    private val mIdleNotificationBuilder: NotificationCompat.Builder
+    private val mIdleNotificationBuilder: NotificationCompat.Builder by lazy { builder(States.IDLE) }
 
-    private fun notificationBuilder(newState: States): NotificationCompat.Builder {
-        return NotificationCompat.Builder(this)
+    private fun builder(state: States?): NotificationCompat.Builder {
+        val b: NotificationCompat.Builder = NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Toma")
-                .addAction(alterStateAction(newState))
                 .setContentIntent(mStartMainActivityPendingIntent)
+        return when (state) {
+            States.IDLE -> b.addAction(alterStateAction(States.WORK))
+                    .addAction(alterStateAction(States.BREAK))
+            else        -> b.addAction(alterStateAction(States.IDLE))
+        }
     }
 
     private fun startTask(task: States) {
@@ -107,11 +105,11 @@ class TimerService : Service(), Loggable {
                     broadcastRemainingTime(pretty(remaining))
                     mNotificationManager.notify(
                             mNotificationId,
-                            mNotificationBuilder.setContentText(pretty(remaining)).build())
+                            mWorkOrBreakNotificationBuilder.setContentText(pretty(remaining)).build())
                 }
 
                 override fun onFinish() = ring()
-            }
+            }.start()
         }
     }
 
@@ -122,7 +120,7 @@ class TimerService : Service(), Loggable {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) handleCommand(intent)
-        return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY // START_NOT_STICKY avoids notification creation at application kill.
     }
 
     private fun handleCommand(intent: Intent) {
