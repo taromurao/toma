@@ -127,7 +127,7 @@ class StateBroadcastReceiver(mActivity: MainActivity): PostableBroadcastReceiver
 
             if (shouldReplace)
                 mHandler.post { mActivity.supportFragmentManager.beginTransaction()
-                        .replace(R.id.activity_main, fragment, fragment.javaClass.name)
+                        .replace(R.id.container, fragment, fragment.javaClass.name)
                         .commit() }
         }
     }

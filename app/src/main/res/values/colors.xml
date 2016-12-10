@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <!--Solarized colors-->
     <color name="base03">#002B36</color>
+    <color name="base02">#073642</color>
+    <color name="base01">#586E75</color>
+    <color name="base00">#657B83</color>
+    <color name="base0">#839496</color>
+    <color name="base1">#93A1A1</color>
     <color name="base2">#EEE8D5</color>
+    <color name="base3">#FDF6E3</color>
+    <color name="yellow">#B58900</color>
+    <color name="orange">#CB4B16</color>
+    <color name="red">#dc322F</color>
+    <color name="magenta">#D33682</color>
+    <color name="violet">#6C71C4</color>
+    <color name="blue">#268BD2</color>
+    <color name="cyan">#2AA198</color>
+    <color name="green">#859900</color>
+
+    <color name="colorPrimary">@color/base3</color>
+    <color name="colorPrimaryDark">@color/base2</color>
+    <color name="colorAccent">@color/magenta</color>
+    <color name="textColorPrimary">@color/base01</color>
+    <color name="textColorSecondary">@color/base1</color>
 </resources>
