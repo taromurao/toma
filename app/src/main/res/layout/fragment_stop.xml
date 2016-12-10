@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="tm.toma.layout.StopFragment">
+    tools:context="layout.StopFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -26,7 +26,8 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@android:drawable/ic_menu_close_clear_cancel"
+                android:background="@null"
+                app:srcCompat="@drawable/ic_stop_white_48dp"
                 android:id="@+id/stopButton"
                 android:layout_below="@+id/remainingTimeTextView"
                 android:layout_centerHorizontal="true" />

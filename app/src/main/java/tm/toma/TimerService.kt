@@ -61,9 +61,9 @@ class TimerService : Service(), Loggable {
 
     private fun alterStateAction(newState: States): NotificationCompat.Action {
         val (icon: Int, title: String) = when (newState) {
-            States.IDLE -> Pair(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.stop))
-            States.WORK -> Pair(android.R.drawable.ic_media_play, getString(R.string.work))
-            States.BREAK-> Pair(android.R.drawable.ic_media_pause, getString(R.string.pause))
+            States.IDLE -> Pair(R.drawable.ic_stop_black_24dp, getString(R.string.stop))
+            States.WORK -> Pair(R.drawable.ic_play_arrow_black_24dp, getString(R.string.work))
+            States.BREAK-> Pair(R.drawable.ic_free_breakfast_black_24dp, getString(R.string.pause))
         }
 
         val alterStateIntent: Intent = Intent(this, TimerService::class.java)
