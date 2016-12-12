@@ -19,7 +19,12 @@
         <service
             android:name=".TimerService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:parentActivityName=".MainActivity"/>
+
     </application>
 
 </manifest>

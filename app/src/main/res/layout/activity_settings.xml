@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_settings"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="tm.toma.SettingsActivity">
+
+    <include layout="@layout/toolbar"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical|center_horizontal">
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:text="@string/setting_work_duration"
+                    android:id="@+id/settingWorkDurationTextView"
+                    style="@style/SettingsLabelText" />
+
+                <EditText
+                    android:id="@+id/settingWorkDurationEditText"
+                    style="@style/SettingsEditText" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:text="@string/setting_break_duration"
+                    android:id="@+id/tsettingBreakDurationTextView"
+                    style="@style/SettingsLabelText" />
+
+                <EditText
+                    android:id="@+id/settingBreakDurationEditText"
+                    style="@style/SettingsEditText" />
+            </TableRow>
+
+        </TableLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

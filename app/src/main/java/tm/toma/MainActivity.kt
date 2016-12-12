@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.widget.Toolbar
 import android.view.Menu
+import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.TextView
 import layout.StopFragment
@@ -65,6 +66,14 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.action_settings    -> {
+                startActivity(Intent(this, SettingsActivity::class.java)); true
+            } else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onResume() {
