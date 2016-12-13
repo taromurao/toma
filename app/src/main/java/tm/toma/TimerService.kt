@@ -5,12 +5,15 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.app.NotificationCompat
 import kotlin.properties.Delegates
+
+enum class States { IDLE, WORK, BREAK }
 
 enum class Commands { PUBLISH_STATE, ALTER_STATE, TOGGLE_MAIN_ACTIVITY_ACTIVE }
 
@@ -19,6 +22,9 @@ val REMAINING_TIME: String = "remainingTime"
 val CURRENT_STATE: String = "currentState"
 
 class TimerService : Service(), Loggable {
+
+    val sConfigs: SharedPreferences by lazy {
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
     val mMediaPlayer: MediaPlayer by lazy {
         val mp = MediaPlayer.create(this, R.raw.bell)
@@ -44,8 +50,7 @@ class TimerService : Service(), Loggable {
     private var mMainActivityIsActive: Boolean = false
 
     private val mNotificationManager: NotificationManager by lazy {
-        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    }
+        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
     private var mTimer: CountDownTimer? = null
 
@@ -56,8 +61,7 @@ class TimerService : Service(), Loggable {
     private val mRemainingTimeIntent: Intent = Intent(REMAINING_TIME)
 
     private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
-        LocalBroadcastManager.getInstance(this)
-    }
+        LocalBroadcastManager.getInstance(this) }
 
     private fun alterStateAction(newState: States): NotificationCompat.Action {
         val (icon: Int, title: String) = when (newState) {
@@ -77,8 +81,7 @@ class TimerService : Service(), Loggable {
     }
 
     private val mStartMainActivityPendingIntent: PendingIntent by lazy {
-        PendingIntent.getService(this, 0, Intent(this, MainActivity::class.java), 0)
-    }
+        PendingIntent.getService(this, 0, Intent(this, MainActivity::class.java), 0) }
 
     private val mWorkOrBreakNotificationBuilder: NotificationCompat.Builder by lazy { builder(null) }
 
@@ -124,11 +127,14 @@ class TimerService : Service(), Loggable {
     }
 
     private fun handleCommand(intent: Intent) {
-        when(intent.getSerializableExtra("command")) {
-            Commands.PUBLISH_STATE  -> broadcastState()
-            Commands.ALTER_STATE    -> mState = intent.getSerializableExtra("newState") as States
-            Commands.TOGGLE_MAIN_ACTIVITY_ACTIVE -> mMainActivityIsActive = intent.getBooleanExtra("active", false)
-        }
+        if (0 in setOf(sConfigs.getInt(PREFS_BREAK_DURATION, 0), sConfigs.getInt(PREFS_BREAK_DURATION, 0)))
+            startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        else
+            when (intent.getSerializableExtra("command")) {
+                Commands.PUBLISH_STATE  -> broadcastState()
+                Commands.ALTER_STATE    -> mState = intent.getSerializableExtra("newState") as States
+                Commands.TOGGLE_MAIN_ACTIVITY_ACTIVE -> mMainActivityIsActive = intent.getBooleanExtra("active", false)
+            }
     }
 
     private fun broadcastState() {
@@ -148,20 +154,23 @@ class TimerService : Service(), Loggable {
             startActivity(Intent(this, MainActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
+
+    private fun duration(state: States): Long {
+        val mins: Int = sConfigs.getInt(when (state) {
+            States.WORK -> PREFS_WORK_DURATION
+            States.BREAK -> PREFS_BREAK_DURATION
+            else -> ""
+        }, 0)
+
+        return (mins * 60 * 1000).toLong()
+    }
 }
 
-private fun duration(state: States): Long {
-    return (when (state) {
-        States.BREAK -> 5F
-        States.WORK -> 45F
-        else -> 0F
-    } * 60 * 1000).toLong()
-}
+private fun pretty(time: Long): String =
+        listOf(minutes(time), secs(time)).joinToString(":") { it.toString().padStart(2, '0') }
 
-private fun pretty(time: Long): String {
-    val min: Long = (time / 1000) / 60
-    val sec: Long = (time / 1000) % 60
-    return "$min:$sec"
-}
+private fun minutes(time: Long): Long = (time / 1000) / 60
+
+private fun secs(time: Long): Long = (time / 1000) % 60
 
 private fun randomInt(): Int = (System.currentTimeMillis()%10000).toInt()

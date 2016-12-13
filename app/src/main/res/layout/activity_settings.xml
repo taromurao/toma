@@ -31,6 +31,11 @@
                 <EditText
                     android:id="@+id/settingWorkDurationEditText"
                     style="@style/SettingsEditText" />
+
+                <TextView
+                    android:text="@string/setting_minutes"
+                    android:id="@+id/minutesTextView1"
+                    style="@style/SettingsLabelText" />
             </TableRow>
 
             <TableRow
@@ -39,15 +44,23 @@
 
                 <TextView
                     android:text="@string/setting_break_duration"
-                    android:id="@+id/tsettingBreakDurationTextView"
+                    android:id="@+id/settingBreakDurationTextView"
                     style="@style/SettingsLabelText" />
 
                 <EditText
                     android:id="@+id/settingBreakDurationEditText"
                     style="@style/SettingsEditText" />
+
+                <TextView
+                    android:text="@string/setting_minutes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/minutesTextView2"
+                    style="@style/SettingsLabelText" />
             </TableRow>
 
         </TableLayout>
+
     </RelativeLayout>
 
 </RelativeLayout>

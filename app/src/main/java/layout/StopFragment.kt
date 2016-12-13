@@ -46,7 +46,8 @@ class StopFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_stop, container, false)
-        view.findViewById(R.id.stopButton).setOnClickListener { context.startService(mChooseWorkOrBreakIntent) }
+        view.findViewById(R.id.stopButton).setOnClickListener {
+            context.startService(mChooseWorkOrBreakIntent) }
         return view
     }
 

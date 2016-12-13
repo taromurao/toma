@@ -10,6 +10,7 @@
         <item name="android:colorForeground">@color/textColorSecondary</item>
         <item name="android:textColorSecondary">@color/textColorSecondary</item>
         <item name="android:textColorSecondaryInverse">@color/textColorSecondary</item>
+        <item name="android:editTextColor">@color/textColorSecondary</item>
     </style>
 
     <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
@@ -32,6 +33,6 @@
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Medium</item>
         <item name="android:inputType">time</item>
         <item name="android:ems">3</item>
-        <item name="android:gravity">right|center_vertical</item>
+        <item name="android:gravity">right</item>
     </style>
 </resources>

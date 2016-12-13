@@ -4,7 +4,9 @@
     <string name="work">Work</string>
     <string name="pause">Break</string>
     <string name="action_settings">Settings</string>
-    <string name="setting_work_duration">Work (minutes)</string>
-    <string name="setting_break_duration">Break (minutes)</string>
+    <string name="setting_work_duration">Work :</string>
+    <string name="setting_break_duration">Break :</string>
+    <string name="setting_minutes">minutes</string>
     <string name="action_done">Done and save.</string>
+    <string name="exception_minutes_must_be_int">Work and break duration should contain only numbers (integer).</string>
 </resources>

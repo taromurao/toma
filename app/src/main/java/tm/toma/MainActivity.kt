@@ -22,20 +22,17 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
         StopFragment.OnFragmentInteractionListener, Loggable {
 
     private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
-        LocalBroadcastManager.getInstance(this)
-    }
+        LocalBroadcastManager.getInstance(this) }
 
     private val mCurrentStateIntentFilter: IntentFilter = IntentFilter(CURRENT_STATE)
 
     private val mRemainingTimeIntentFilter: IntentFilter = IntentFilter(REMAINING_TIME)
 
     private val mStateBroadcastReceiver: StateBroadcastReceiver by lazy {
-        StateBroadcastReceiver(this)
-    }
+        StateBroadcastReceiver(this) }
 
     private val mRemainingTimeBroadcastReceiver: RemainingTimeBroadcastReceiver by lazy {
-        RemainingTimeBroadcastReceiver(this)
-    }
+        RemainingTimeBroadcastReceiver(this) }
 
     val mWorkOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
 

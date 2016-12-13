@@ -20,7 +20,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/remainingTimeTextView"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textColor="@color/cyan"
+                android:textColor="@color/colorAccent"
                 android:textSize="@dimen/font_size_large"/>
 
             <ImageButton
