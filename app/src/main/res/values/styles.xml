@@ -35,4 +35,19 @@
         <item name="android:ems">3</item>
         <item name="android:gravity">right</item>
     </style>
+
+    <style name="ClockText" parent="AppTheme">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/base3</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Large</item>
+    </style>
+
+    <style name="ClockMinuteText" parent="ClockText">
+        <item name="android:textSize">60sp</item>
+    </style>
+
+    <style name="ClockSecondText" parent="ClockText">
+        <item name="android:textSize">30sp</item>
+    </style>
 </resources>

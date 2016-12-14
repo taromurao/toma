@@ -167,7 +167,7 @@ class TimerService : Service(), Loggable {
 }
 
 private fun pretty(time: Long): String =
-        listOf(minutes(time), secs(time)).joinToString(":") { it.toString().padStart(2, '0') }
+        listOf(minutes(time), secs(time)).joinToString(".") { it.toString().padStart(2, '0') }
 
 private fun minutes(time: Long): Long = (time / 1000) / 60
 
