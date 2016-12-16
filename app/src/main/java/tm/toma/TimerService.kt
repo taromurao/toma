@@ -89,7 +89,7 @@ class TimerService : Service(), Loggable {
 
     private fun builder(state: States?): NotificationCompat.Builder {
         val b: NotificationCompat.Builder = NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_timer_black_24dp)
                 .setContentTitle("Toma")
                 .setContentIntent(mStartMainActivityPendingIntent)
         return when (state) {
