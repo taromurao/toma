@@ -32,7 +32,7 @@ class TimerService : Service(), Loggable {
         mp
     }
 
-    private var mState: States by Delegates.observable(States.IDLE) { _, old, new ->
+    private var mState: States by Delegates.observable(States.IDLE) { prop, old, new ->
         mLogger.debug("Got new state: {}, old state: {}", new, old)
         broadcastState()
         if (new in setOf(States.WORK, States.BREAK)) {
