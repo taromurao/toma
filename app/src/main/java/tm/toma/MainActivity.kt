@@ -21,24 +21,24 @@ import layout.WorkOrBreakFragment
 class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteractionListener,
         StopFragment.OnFragmentInteractionListener, Loggable {
 
-    private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
+    private val sLocalBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this) }
 
-    private val mCurrentStateIntentFilter: IntentFilter = IntentFilter(CURRENT_STATE)
+    private val sCurrentStateIntentFilter: IntentFilter = IntentFilter(CURRENT_STATE)
 
-    private val mRemainingTimeIntentFilter: IntentFilter = IntentFilter(REMAINING_TIME)
+    private val sRemainingTimeIntentFilter: IntentFilter = IntentFilter(REMAINING_TIME)
 
-    private val mStateBroadcastReceiver: StateBroadcastReceiver by lazy {
+    private val sStateBroadcastReceiver: StateBroadcastReceiver by lazy {
         StateBroadcastReceiver(this) }
 
-    private val mRemainingTimeBroadcastReceiver: RemainingTimeBroadcastReceiver by lazy {
+    private val sRemainingTimeBroadcastReceiver: RemainingTimeBroadcastReceiver by lazy {
         RemainingTimeBroadcastReceiver(this) }
 
-    val mWorkOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
+    val workOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
 
     val mStopFragment: StopFragment = StopFragment()
 
-    private val mRequestCurrentStateIntent: Intent by lazy {
+    private val sRequestCurrentStateIntent: Intent by lazy {
         val intent = Intent(this, TimerService::class.java)
         intent.putExtra("command", Commands.PUBLISH_STATE)
     }
@@ -75,9 +75,9 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     override fun onResume() {
         super.onResume()
-        mLocalBroadcastManager.registerReceiver(mStateBroadcastReceiver, mCurrentStateIntentFilter)
-        mLocalBroadcastManager.registerReceiver(
-                mRemainingTimeBroadcastReceiver, mRemainingTimeIntentFilter)
+        sLocalBroadcastManager.registerReceiver(sStateBroadcastReceiver, sCurrentStateIntentFilter)
+        sLocalBroadcastManager.registerReceiver(
+                sRemainingTimeBroadcastReceiver, sRemainingTimeIntentFilter)
         toggleMainActivityActive(true)
         requestCurrentState()
     }
@@ -85,11 +85,11 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
     override fun onPause() {
         super.onPause()
         toggleMainActivityActive(false)
-        mLocalBroadcastManager.unregisterReceiver(mStateBroadcastReceiver)
-        mLocalBroadcastManager.unregisterReceiver(mRemainingTimeBroadcastReceiver)
+        sLocalBroadcastManager.unregisterReceiver(sStateBroadcastReceiver)
+        sLocalBroadcastManager.unregisterReceiver(sRemainingTimeBroadcastReceiver)
     }
 
-    private fun requestCurrentState() { startService(mRequestCurrentStateIntent) }
+    private fun requestCurrentState() { startService(sRequestCurrentStateIntent) }
 
     private fun toggleMainActivityActive(active: Boolean) {
         startService(
@@ -120,7 +120,7 @@ class StateBroadcastReceiver(sActivity: MainActivity): PostableBroadcastReceiver
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null && sActivity != null) {
             setFragment(when (intent.getSerializableExtra("state")) {
-                States.IDLE -> sActivity.mWorkOrBreakFragment
+                States.IDLE -> sActivity.workOrBreakFragment
                 else        -> sActivity.mStopFragment
             })
         }

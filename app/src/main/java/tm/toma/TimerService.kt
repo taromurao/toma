@@ -23,26 +23,26 @@ val CURRENT_STATE: String = "currentState"
 
 class TimerService : Service(), Loggable {
 
-    val sConfigs: SharedPreferences by lazy {
+    private val sConfigs: SharedPreferences by lazy {
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
-    val mMediaPlayer: MediaPlayer by lazy {
+    private val sMediaPlayer: MediaPlayer by lazy {
         val mp = MediaPlayer.create(this, R.raw.bell)
         mp.setLooping(true)
         mp
     }
 
-    private var mState: States by Delegates.observable(States.IDLE) { prop, old, new ->
-        mLogger.debug("Got new state: {}, old state: {}", new, old)
+    private var sState: States by Delegates.observable(States.IDLE) { prop, old, new ->
+        sLogger.debug("Got new state: {}, old state: {}", new, old)
         broadcastState()
         if (new in setOf(States.WORK, States.BREAK)) {
             mNotificationId = randomInt()
-            startForeground(mNotificationId, mWorkOrBreakNotificationBuilder.build())
+            startForeground(mNotificationId, sWorkOrBreakNotificationBuilder.build())
             startTask(new)
         } else {
             mTimer?.cancel()
-            mNotificationManager.notify(mNotificationId, mIdleNotificationBuilder.build())
-            if (mMediaPlayer.isPlaying) mMediaPlayer.pause()
+            mNotificationManager.notify(mNotificationId, sIdleNotificationBuilder.build())
+            if (sMediaPlayer.isPlaying) sMediaPlayer.pause()
             stopForeground(false)
         }
     }
@@ -56,11 +56,11 @@ class TimerService : Service(), Loggable {
 
     private var mNotificationId: Int = 0
 
-    private val mCurrentStateIntent: Intent = Intent(CURRENT_STATE)
+    private val sCurrentStateIntent: Intent = Intent(CURRENT_STATE)
 
-    private val mRemainingTimeIntent: Intent = Intent(REMAINING_TIME)
+    private val sRemainingTimeIntent: Intent = Intent(REMAINING_TIME)
 
-    private val mLocalBroadcastManager: LocalBroadcastManager by lazy {
+    private val sLocalBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this) }
 
     private fun alterStateAction(newState: States): NotificationCompat.Action {
@@ -80,18 +80,18 @@ class TimerService : Service(), Loggable {
         return NotificationCompat.Action.Builder(icon, title, notificationPendingIntent).build()
     }
 
-    private val mStartMainActivityPendingIntent: PendingIntent by lazy {
+    private val sStartMainActivityPendingIntent: PendingIntent by lazy {
         PendingIntent.getService(this, 0, Intent(this, MainActivity::class.java), 0) }
 
-    private val mWorkOrBreakNotificationBuilder: NotificationCompat.Builder by lazy { builder(null) }
+    private val sWorkOrBreakNotificationBuilder: NotificationCompat.Builder by lazy { builder(null) }
 
-    private val mIdleNotificationBuilder: NotificationCompat.Builder by lazy { builder(States.IDLE) }
+    private val sIdleNotificationBuilder: NotificationCompat.Builder by lazy { builder(States.IDLE) }
 
     private fun builder(state: States?): NotificationCompat.Builder {
         val b: NotificationCompat.Builder = NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_timer_black_24dp)
                 .setContentTitle("Toma")
-                .setContentIntent(mStartMainActivityPendingIntent)
+                .setContentIntent(sStartMainActivityPendingIntent)
         return when (state) {
             States.IDLE -> b.addAction(alterStateAction(States.WORK))
                     .addAction(alterStateAction(States.BREAK))
@@ -104,11 +104,11 @@ class TimerService : Service(), Loggable {
         if (task in setOf(States.WORK, States.BREAK)) {
             mTimer = object : CountDownTimer(duration(task), 1000) {
                 override fun onTick(remaining: Long) {
-                    mLogger.debug("Remaining time is {}", pretty(remaining))
+                    sLogger.debug("Remaining time is {}", pretty(remaining))
                     broadcastRemainingTime(pretty(remaining))
                     mNotificationManager.notify(
                             mNotificationId,
-                            mWorkOrBreakNotificationBuilder.setContentText(pretty(remaining)).build())
+                            sWorkOrBreakNotificationBuilder.setContentText(pretty(remaining)).build())
                 }
 
                 override fun onFinish() = ring()
@@ -132,24 +132,24 @@ class TimerService : Service(), Loggable {
         else
             when (intent.getSerializableExtra("command")) {
                 Commands.PUBLISH_STATE  -> broadcastState()
-                Commands.ALTER_STATE    -> mState = intent.getSerializableExtra("newState") as States
+                Commands.ALTER_STATE    -> sState = intent.getSerializableExtra("newState") as States
                 Commands.TOGGLE_MAIN_ACTIVITY_ACTIVE -> mMainActivityIsActive = intent.getBooleanExtra("active", false)
             }
     }
 
     private fun broadcastState() {
-        mCurrentStateIntent.putExtra("state", mState)
-        mLocalBroadcastManager.sendBroadcast(mCurrentStateIntent)
+        sCurrentStateIntent.putExtra("state", sState)
+        sLocalBroadcastManager.sendBroadcast(sCurrentStateIntent)
     }
 
     private fun broadcastRemainingTime(remainingTime: String) {
-        mLogger.debug("Broadcasting remainig time: $remainingTime")
-        mRemainingTimeIntent.putExtra("time", remainingTime)
-        mLocalBroadcastManager.sendBroadcast(mRemainingTimeIntent)
+        sLogger.debug("Broadcasting remainig time: $remainingTime")
+        sRemainingTimeIntent.putExtra("time", remainingTime)
+        sLocalBroadcastManager.sendBroadcast(sRemainingTimeIntent)
     }
 
     private fun ring() {
-        if (!mMediaPlayer.isPlaying) mMediaPlayer.start()
+        if (!sMediaPlayer.isPlaying) sMediaPlayer.start()
         if (!mMainActivityIsActive)
             startActivity(Intent(this, MainActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

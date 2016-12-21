@@ -8,6 +8,6 @@ import org.slf4j.LoggerFactory
  */
 
 interface Loggable {
-    val mLogger: Logger
+    val sLogger: Logger
         get() = LoggerFactory.getLogger(javaClass)
 }
