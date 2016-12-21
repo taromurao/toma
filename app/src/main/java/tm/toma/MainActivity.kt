@@ -100,39 +100,40 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
 }
 
-abstract class PostableBroadcastReceiver(val mActivity: MainActivity?) : BroadcastReceiver() {
-    protected val mHandler: Handler by lazy { Handler(mActivity?.mainLooper) }
+abstract class PostableBroadcastReceiver(val sActivity: MainActivity?) : BroadcastReceiver() {
+    protected val sHandler: Handler? by lazy { Handler(sActivity?.mainLooper) }
 }
 
 class RemainingTimeBroadcastReceiver(mActivity: MainActivity?) :
         PostableBroadcastReceiver(mActivity), Loggable {
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val remainingTime: String? = intent?.getStringExtra("time")
-        if (remainingTime != null && mActivity != null)
-            mHandler.post {
-                (mActivity.findViewById(R.id.remainingTimeTextView) as TextView).text =
+        if (remainingTime != null && sActivity != null)
+            sHandler?.post {
+                (sActivity.findViewById(R.id.remainingTimeTextView) as TextView?)?.text =
                         remainingTime }
     }
 }
 
-class StateBroadcastReceiver(mActivity: MainActivity): PostableBroadcastReceiver(mActivity) {
+class StateBroadcastReceiver(sActivity: MainActivity): PostableBroadcastReceiver(sActivity) {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null && mActivity != null) {
+        if (intent != null && sActivity != null) {
             setFragment(when (intent.getSerializableExtra("state")) {
-                States.IDLE -> mActivity.mWorkOrBreakFragment
-                else        -> mActivity.mStopFragment
+                States.IDLE -> sActivity.mWorkOrBreakFragment
+                else        -> sActivity.mStopFragment
             })
         }
     }
 
     private fun setFragment(fragment: Fragment) {
-        if (mActivity !=  null) {
+        if (sActivity !=  null) {
             val shouldReplace: Boolean =
-                    !(mActivity.supportFragmentManager
+                    !(sActivity.supportFragmentManager
                             .findFragmentByTag(fragment.javaClass.name)?.isVisible ?: false)
 
             if (shouldReplace)
-                mHandler.post { mActivity.supportFragmentManager.beginTransaction()
+                sHandler?.post { sActivity.supportFragmentManager.beginTransaction()
                         .replace(R.id.container, fragment, fragment.javaClass.name)
                         .commit() }
         }
