@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
     private val sStateBroadcastReceiver: StateBroadcastReceiver by lazy {
         StateBroadcastReceiver(this) }
 
-    val workOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
+    val workOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment.newInstance()
 
     val mStopFragment: StopFragment = StopFragment.newInstance()
 
