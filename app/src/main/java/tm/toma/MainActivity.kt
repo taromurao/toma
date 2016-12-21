@@ -14,7 +14,6 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.TextView
 import layout.StopFragment
 import layout.WorkOrBreakFragment
 
@@ -26,17 +25,12 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
     private val sCurrentStateIntentFilter: IntentFilter = IntentFilter(CURRENT_STATE)
 
-    private val sRemainingTimeIntentFilter: IntentFilter = IntentFilter(REMAINING_TIME)
-
     private val sStateBroadcastReceiver: StateBroadcastReceiver by lazy {
         StateBroadcastReceiver(this) }
 
-    private val sRemainingTimeBroadcastReceiver: RemainingTimeBroadcastReceiver by lazy {
-        RemainingTimeBroadcastReceiver(this) }
-
     val workOrBreakFragment: WorkOrBreakFragment = WorkOrBreakFragment()
 
-    val mStopFragment: StopFragment = StopFragment()
+    val mStopFragment: StopFragment = StopFragment.newInstance()
 
     private val sRequestCurrentStateIntent: Intent by lazy {
         val intent = Intent(this, TimerService::class.java)
@@ -76,8 +70,6 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
     override fun onResume() {
         super.onResume()
         sLocalBroadcastManager.registerReceiver(sStateBroadcastReceiver, sCurrentStateIntentFilter)
-        sLocalBroadcastManager.registerReceiver(
-                sRemainingTimeBroadcastReceiver, sRemainingTimeIntentFilter)
         toggleMainActivityActive(true)
         requestCurrentState()
     }
@@ -86,7 +78,6 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
         super.onPause()
         toggleMainActivityActive(false)
         sLocalBroadcastManager.unregisterReceiver(sStateBroadcastReceiver)
-        sLocalBroadcastManager.unregisterReceiver(sRemainingTimeBroadcastReceiver)
     }
 
     private fun requestCurrentState() { startService(sRequestCurrentStateIntent) }
@@ -100,23 +91,10 @@ class MainActivity : AppCompatActivity(), WorkOrBreakFragment.OnFragmentInteract
 
 }
 
-abstract class PostableBroadcastReceiver(val sActivity: MainActivity?) : BroadcastReceiver() {
-    protected val sHandler: Handler? by lazy { Handler(sActivity?.mainLooper) }
-}
+class StateBroadcastReceiver(val sActivity: MainActivity?): BroadcastReceiver() {
 
-class RemainingTimeBroadcastReceiver(mActivity: MainActivity?) :
-        PostableBroadcastReceiver(mActivity), Loggable {
+    val sHandler: Handler? by lazy { Handler(sActivity?.mainLooper) }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val remainingTime: String? = intent?.getStringExtra("time")
-        if (remainingTime != null && sActivity != null)
-            sHandler?.post {
-                (sActivity.findViewById(R.id.remainingTimeTextView) as TextView?)?.text =
-                        remainingTime }
-    }
-}
-
-class StateBroadcastReceiver(sActivity: MainActivity): PostableBroadcastReceiver(sActivity) {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null && sActivity != null) {
             setFragment(when (intent.getSerializableExtra("state")) {
